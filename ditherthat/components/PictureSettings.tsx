@@ -163,18 +163,22 @@ export function PictureSettings({
       <div style={rowStyle}>
         <label style={labelStyle}>Resolution:</label>
         <div style={rangeContainer}>
-          {/* Discrete slider with 3 steps: 0=800, 1=1920, 2=2560 */}
+          {/* Discrete slider with 5 steps: 0=480, 1=640, 2=800, 3=1920, 4=2560 */}
           {(() => {
-            const options = [800, 1920, 2560];
-            const idx = Math.max(0, options.findIndex((v) => v === resolutionMax));
+            const options = [480, 640, 800, 1920, 2560];
+            let idx = options.findIndex((v) => v === resolutionMax);
+            if (idx < 0) {
+              // Default to 1920 step if current value not in options
+              idx = 3;
+            }
             return (
               <>
                 <input
                   type="range"
                   min={0}
-                  max={2}
+                  max={4}
                   step={1}
-                  value={idx < 0 ? 1 : idx}
+                  value={idx}
                   onChange={(e) => {
                     const nextIdx = Number(e.target.value);
                     setResolutionMax(options[nextIdx]);

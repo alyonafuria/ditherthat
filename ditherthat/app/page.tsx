@@ -1,8 +1,6 @@
 "use client";
 import { useEffect, useRef, useCallback, useState } from "react";
-import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
-import { useAccount } from "wagmi";
 // import { useQuickAuth } from "@coinbase/onchainkit/minikit";
 import styles from "./page.module.css";
 import {
@@ -42,6 +40,7 @@ function ConnectedApp() {
   const [rdecay, setRDecay] = useState<number>(0.1667);
   const [srcImage, setSrcImage] = useState<ImageData | null>(null);
   const [resolutionMax, setResolutionMax] = useState<number>(1920);
+  const [showCamera, setShowCamera] = useState<boolean>(false);
   const [origBitmap, setOrigBitmap] = useState<ImageBitmap | null>(null);
 
   const onDownload = useCallback(() => {
@@ -160,6 +159,17 @@ function ConnectedApp() {
     else if (w < 1400) def = 1920;
     else def = 2560;
     setResolutionMax(def);
+    // Decide if we should show the camera button (mobile/tablet or coarse pointer)
+    const isCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    const smallScreen = w < 900;
+    setShowCamera(isCoarse || smallScreen);
+    const onResize = () => {
+      const ww = window.innerWidth;
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      setShowCamera(coarse || ww < 900);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   // Recompute when algorithm settings change and we have a source image
@@ -188,14 +198,18 @@ function ConnectedApp() {
         {!srcImage ? (
           // Center the two action buttons in the middle of the screen until an image is chosen
           <div className="centerScreen">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 360 }}>
-              <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+            <div style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8, width: "100%", maxWidth: 360 }}>
+              {showCamera && (
+                <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+              )}
               <button type="button" onClick={onUploadPicture} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Upload a Picture</button>
             </div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 520, margin: "0 auto 1rem" }}>
-            <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+          <div style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8, width: "100%", maxWidth: 520, margin: "0 auto 1rem" }}>
+            {showCamera && (
+              <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+            )}
             <button type="button" onClick={onUploadPicture} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Upload a Picture</button>
           </div>
         )}
@@ -250,17 +264,5 @@ function ConnectedApp() {
 }
 
 export default function Home() {
-  const { isConnected } = useAccount();
-  if (!isConnected) {
-    return (
-      <main className={styles.container}>
-        <div className={styles.content}>
-          <div className="centerScreen">
-            <Wallet />
-          </div>
-        </div>
-      </main>
-    );
-  }
   return <ConnectedApp />;
 }
