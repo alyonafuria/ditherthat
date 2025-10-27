@@ -27,14 +27,22 @@ export function HeaderBanner() {
       }}
     >
       <div className="headerMarquee" aria-hidden={false}>
-        <div className="headerMarqueeInner" style={{ color: "#a855f7", fontSize: "clamp(8px, 2.2vw, 12px)", lineHeight: 1.3 }}>
-          <pre style={{ margin: 0, whiteSpace: "pre", display: "inline-block" }}>{ASCII_ART}</pre>
+        <div
+          className="headerMarqueeInner"
+          style={{
+            color: "#a855f7",
+            fontSize: "clamp(8px, 2.2vw, 12px)",
+            lineHeight: 1.3,
+            fontFamily: 'var(--font-ascii-mono), "Courier New", "Lucida Console", Menlo, Monaco, Consolas, monospace',
+          }}
+        >
+          <pre style={{ margin: 0, whiteSpace: "pre", display: "inline-block", fontFamily: 'inherit' }}>{ASCII_ART}</pre>
           <span aria-hidden style={{ fontFamily: 'inherit', display: 'inline-block', padding: '0 1ch' }}>{SEP}</span>
-          <pre style={{ margin: 0, whiteSpace: "pre", display: "inline-block" }}>{ASCII_ART}</pre>
+          <pre style={{ margin: 0, whiteSpace: "pre", display: "inline-block", fontFamily: 'inherit' }}>{ASCII_ART}</pre>
           <span aria-hidden style={{ fontFamily: 'inherit', display: 'inline-block', padding: '0 1ch' }}>{SEP}</span>
-          <pre style={{ margin: 0, whiteSpace: "pre", display: "inline-block" }}>{ASCII_ART}</pre>
+          <pre style={{ margin: 0, whiteSpace: "pre", display: "inline-block", fontFamily: 'inherit' }}>{ASCII_ART}</pre>
           <span aria-hidden style={{ fontFamily: 'inherit', display: 'inline-block', padding: '0 1ch' }}>{SEP}</span>
-          <pre style={{ margin: 0, whiteSpace: "pre", display: "inline-block" }}>{ASCII_ART}</pre>
+          <pre style={{ margin: 0, whiteSpace: "pre", display: "inline-block", fontFamily: 'inherit' }}>{ASCII_ART}</pre>
         </div>
       </div>
     </header>
