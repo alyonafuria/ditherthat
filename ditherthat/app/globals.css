@@ -211,6 +211,18 @@ img, canvas, video, svg {
   margin: 0 auto;
 }
 
+/* Stabilize ASCII marquee rendering across environments */
+.headerMarqueeInner {
+  font-family: DejaVu Sans Mono, "Courier New", "Lucida Console", Menlo, Monaco, Consolas, monospace !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0 !important;
+  font-variant-ligatures: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  font-feature-settings: "liga" 0, "clig" 0, "kern" 0;
+  white-space: pre;
+}
+
 /* Align an element to the right edge of the viewport without changing structure */
 .rightEdge {
   width: 100vw;
