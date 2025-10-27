@@ -147,10 +147,39 @@
     box-shadow: none !important;
   }
 
+  /* Remove border around wallet buttons/components per design */
+  :where([class*="ock"], [class*="onchainkit"]) button { border: none !important; }
+  :where([class*="ock"], [class*="onchainkit"]) [role="region"],
+  :where([class*="ock"], [class*="onchainkit"]) [role="group"],
+  :where([class*="ock"], [class*="onchainkit"]) .card { border: none !important; box-shadow: none !important; }
+
   /* Respect dark color-scheme for built-ins */
   @media (prefers-color-scheme: dark) {
     html { color-scheme: dark; }
   }
+}
+
+/* Header marquee animation */
+.headerMarquee { overflow: hidden; }
+.headerMarqueeInner {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: header-marquee 20s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .headerMarqueeInner { animation: none; }
+}
+@keyframes header-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-25%); }
+}
+
+/* Remove borders/background from marquee pre blocks */
+.headerMarquee pre {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
 }
 
 .rangeSlim,

@@ -146,7 +146,9 @@ export default function Home() {
     return (
       <main className={styles.container}>
         <div className={styles.content}>
-          <Wallet />
+          <div style={{ display: "flex", justifyContent: "flex-end", margin: "8px 0 16px", width: "100%" }}>
+            <Wallet />
+          </div>
         </div>
       </main>
     );
@@ -155,15 +157,32 @@ export default function Home() {
   // Connected UI
   return (
     <div className={styles.container}>
-      <header className={styles.headerWrapper}>
-        <Wallet />
-      </header>
-
       <div className={styles.content}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 520, margin: "0 auto 1rem" }}>
-          <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
-          <button type="button" onClick={onUploadPicture} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Upload a Picture</button>
+        {/* Wallet below header, right-aligned, no extra borders via CSS overrides */}
+        <div style={{ display: "flex", justifyContent: "flex-end", margin: "8px 0 16px", width: "100%" }}>
+          <Wallet />
         </div>
+
+        {!srcImage ? (
+          // Center the two action buttons in the middle of the screen until an image is chosen
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "calc(100vh - 140px)",
+            width: "100%",
+          }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 520 }}>
+              <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+              <button type="button" onClick={onUploadPicture} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Upload a Picture</button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 520, margin: "0 auto 1rem" }}>
+            <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+            <button type="button" onClick={onUploadPicture} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Upload a Picture</button>
+          </div>
+        )}
 
         {srcImage && (
           <>
