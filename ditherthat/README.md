@@ -18,7 +18,7 @@ We implement ordered dithering starting with Bayer matrices in C and compile to 
 npm run wasm:build
 ```
 
-This produces `public/wasm/dither.js` and `public/wasm/dither.wasm`.
+This produces a single self-contained file: `public/wasm/dither.js` (the WebAssembly binary is embedded via SINGLE_FILE).
 
 ### How it’s used
 
@@ -31,8 +31,15 @@ npm run dev
 
 ### Algorithm support
 
-- Bayer ordered dithering with levels (0..5) and optional inversion (bias darker).
-- Hooks left in C for expanding to white noise, blue noise, and error diffusion (Floyd–Steinberg, etc).
+- Ordered dithering using threshold maps:
+	- Bayer matrices (levels 0..5) with optional inversion
+	- Blue-noise threshold map (tiled, toroidal farthest-point sampling)
+- Error diffusion:
+	- Simple 2D
+	- Floyd–Steinberg
+	- Jarvis–Judice–Ninke (JJN)
+	- Atkinson
+	- Riemersma (Hilbert traversal, finite error list)
 
 ## UI behavior
 
