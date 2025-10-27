@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+  "wasm:build": "emcc wasm/dither.c -O3 -s MODULARIZE=1 -s EXPORT_ES6=1 -s SINGLE_FILE=1 -s ALLOW_MEMORY_GROWTH=1 -s ENVIRONMENT=web -s EXPORTED_FUNCTIONS=['_dither_bayer','_dither_blue_noise','_dither_blue_noise_sz','_dither_simple2d','_dither_floyd_steinberg','_dither_jjn','_dither_atkinson','_dither_riemersma','_malloc','_free'] -s EXPORTED_RUNTIME_METHODS=['cwrap','ccall','FS','HEAPU8'] -o public/wasm/dither.js"
   },
   "dependencies": {
     "@coinbase/onchainkit": "latest",

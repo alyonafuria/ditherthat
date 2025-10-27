@@ -6,9 +6,9 @@
     --fg: #f5f5f5;
     --muted: #111111;
     --border: #f5f5f5;
-    --accent: #6ea8ff; /* blue readable on black */
-    --accent-visited: #c09cff; /* visited purple on black */
-    --accent-active: #ff7070; /* active red on black */
+    --accent: #f5f5f5; /* white accent for B/W palette */
+    --accent-visited: #f5f5f5; /* unify to white */
+    --accent-active: #f5f5f5; /* unify to white */
   }
 
   @media (prefers-color-scheme: dark) {
@@ -17,9 +17,9 @@
       --fg: #f5f5f5;
       --muted: #111111;
       --border: #f5f5f5;
-      --accent: #6ea8ff;
-      --accent-visited: #c09cff;
-      --accent-active: #ff7070;
+      --accent: #f5f5f5;
+      --accent-visited: #f5f5f5;
+      --accent-active: #f5f5f5;
     }
   }
 
@@ -147,8 +147,107 @@
     box-shadow: none !important;
   }
 
+  /* Remove border around wallet buttons/components per design */
+  :where([class*="ock"], [class*="onchainkit"]) button { border: none !important; }
+  :where([class*="ock"], [class*="onchainkit"]) [role="region"],
+  :where([class*="ock"], [class*="onchainkit"]) [role="group"],
+  :where([class*="ock"], [class*="onchainkit"]) .card { border: none !important; box-shadow: none !important; }
+
   /* Respect dark color-scheme for built-ins */
   @media (prefers-color-scheme: dark) {
     html { color-scheme: dark; }
   }
+}
+
+/* Header marquee animation */
+.headerMarquee { overflow: hidden; }
+.headerMarqueeInner {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: header-marquee 20s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .headerMarqueeInner { animation: none; }
+}
+@keyframes header-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-25%); }
+}
+
+/* Remove borders/background from marquee pre blocks */
+.headerMarquee pre {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.rangeSlim,
+input[type="range"].rangeSlim {
+  border: none !important;
+  padding: 0 !important;
+}
+
+.rangeSlim {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+.rangeSlim:focus { outline: none !important; outline-offset: 0 !important; }
+.rangeSlim:focus-visible { outline: none !important; outline-offset: 0 !important; }
+
+/* WebKit/Blink */
+.rangeSlim::-webkit-slider-runnable-track {
+  height: 2px; /* single thin line */
+  background: #fff; /* white line */
+}
+.rangeSlim::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px; /* fatter rectangular thumb */
+  height: 36px;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+  margin-top: -17px; /* center thumb over 2px track: (36-2)/2 */
+  box-shadow: none;
+  outline: none;
+}
+
+/* Firefox */
+.rangeSlim::-moz-range-track {
+  height: 2px;
+  background: #fff;
+}
+.rangeSlim::-moz-range-progress {
+  height: 2px;
+  background: #fff; /* same color so it's a single line */
+}
+.rangeSlim::-moz-range-thumb {
+  width: 24px;
+  height: 36px;
+  background: #fff;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+/* Old MS Edge/IE (best-effort) */
+.rangeSlim::-ms-track {
+  height: 2px;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+.rangeSlim::-ms-fill-lower,
+.rangeSlim::-ms-fill-upper {
+  background: #fff;
+}
+.rangeSlim::-ms-thumb {
+  width: 24px;
+  height: 36px;
+  background: #fff;
+  border: none;
+  border-radius: 0;
 }
