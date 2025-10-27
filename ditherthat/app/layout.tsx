@@ -4,16 +4,63 @@ import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "@/minikit.config";
 import { RootProvider } from "./rootProvider";
 import "./globals.css";
-import HeaderBanner from "@/components/HeaderBanner";
+import HeaderRegion from "@/components/HeaderRegion";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const title = minikitConfig.miniapp.name;
+  const description = minikitConfig.miniapp.description;
+  const image = minikitConfig.miniapp.heroImageUrl;
   return {
-    title: minikitConfig.miniapp.name,
-    description: minikitConfig.miniapp.description,
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: title,
+      template: `%s | ${title}`,
+    },
+    description,
+    applicationName: title,
+    keywords: [
+      "dither",
+      "image dithering",
+      "black and white",
+      "halftone",
+      "photo to b&w",
+      "floyd-steinberg",
+      "bayer",
+      "blue noise",
+    ],
+    openGraph: {
+      type: "website",
+      url: siteUrl,
+      title,
+      description,
+      siteName: title,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+    alternates: {
+      canonical: siteUrl,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
     other: {
       "fc:miniapp": JSON.stringify({
         version: minikitConfig.miniapp.version,
-        imageUrl: minikitConfig.miniapp.heroImageUrl,
+        imageUrl: image,
         button: {
           title: `Launch ${minikitConfig.miniapp.name}`,
           action: {
@@ -42,17 +89,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <RootProvider>
-      <html lang="en">
-        <body className={`${inter.variable} ${sourceCodePro.variable}`}>
+    <html lang="en">
+      <body className={`${inter.variable} ${sourceCodePro.variable}`}>
+        <RootProvider>
           <SafeArea>
-            <div>
-              <HeaderBanner />
-              {children}
+            <div className="appShell">
+              <HeaderRegion />
+              <main className="mainArea">
+                <div className="centerWrap">
+                  {children}
+                </div>
+              </main>
             </div>
           </SafeArea>
-        </body>
-      </html>
-    </RootProvider>
+        </RootProvider>
+      </body>
+    </html>
   );
 }

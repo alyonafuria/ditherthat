@@ -18,6 +18,7 @@ export function HeaderBanner() {
         top: 0,
         zIndex: 50,
         background: "var(--bg)",
+        width: "100%",
 
         // Small top padding so marquee doesn't hug the very edge
         paddingTop: 6,

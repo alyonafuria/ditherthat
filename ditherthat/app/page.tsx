@@ -1,8 +1,6 @@
 "use client";
 import { useEffect, useRef, useCallback, useState } from "react";
-import { Wallet } from "@coinbase/onchainkit/wallet";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
-import { useAccount } from "wagmi";
 // import { useQuickAuth } from "@coinbase/onchainkit/minikit";
 import styles from "./page.module.css";
 import {
@@ -41,6 +39,9 @@ function ConnectedApp() {
   const [rlength, setRLength] = useState<number>(32);
   const [rdecay, setRDecay] = useState<number>(0.1667);
   const [srcImage, setSrcImage] = useState<ImageData | null>(null);
+  const [resolutionMax, setResolutionMax] = useState<number>(1920);
+  const [showCamera, setShowCamera] = useState<boolean>(false);
+  const [origBitmap, setOrigBitmap] = useState<ImageBitmap | null>(null);
 
   const onDownload = useCallback(() => {
     const canvas = canvasRef.current;
@@ -87,6 +88,32 @@ function ConnectedApp() {
   const onTakePhoto = useCallback(() => {
     cameraInputRef.current?.click();
   }, []);
+
+  // Live recompute of srcImage when resolution changes, using the original bitmap
+  useEffect(() => {
+    if (!origBitmap) return;
+    (async () => {
+      try {
+        const bmp = origBitmap;
+        const tmp = document.createElement("canvas");
+        const longest = Math.max(bmp.width, bmp.height);
+        const scale = Math.min(1, (resolutionMax as number) / longest);
+        const w = Math.round(bmp.width * scale);
+        const h = Math.round(bmp.height * scale);
+        tmp.width = w;
+        tmp.height = h;
+        const tctx = tmp.getContext("2d", { willReadFrequently: true });
+        if (!tctx) throw new Error("Canvas not supported");
+        tctx.clearRect(0, 0, w, h);
+        tctx.drawImage(bmp, 0, 0, w, h);
+        const src = tctx.getImageData(0, 0, w, h);
+        setSrcImage(src);
+      } catch (err) {
+        console.error(err);
+        setError("Rescale failed. Try another image.");
+      }
+    })();
+  }, [resolutionMax, origBitmap]);
   const onUploadPicture = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
@@ -97,10 +124,12 @@ function ConnectedApp() {
     try {
       setError(null);
       const bmp = await createImageBitmap(file);
+      setOrigBitmap(bmp);
       // Use an offscreen canvas to prepare ImageData before the visible canvas mounts
   const tmp = document.createElement("canvas");
-  const maxW = Math.min(800, Math.max(320, window.innerWidth - 32));
-      const scale = Math.min(1, maxW / bmp.width);
+  // Scale by longest side, capped at user-selected resolutionMax, independent of device width
+      const longest = Math.max(bmp.width, bmp.height);
+      const scale = Math.min(1, (resolutionMax as number) / longest);
       const w = Math.round(bmp.width * scale);
       const h = Math.round(bmp.height * scale);
       tmp.width = w;
@@ -119,7 +148,29 @@ function ConnectedApp() {
       // Reset the input even if the element unmounts later
       inputEl.value = "";
     }
-  }, [/* doDither not needed here; effect handles it */]);
+  }, [resolutionMax /* doDither not needed here; effect handles it */]);
+
+  // Set a sensible default resolution based on device width (client-only)
+  useEffect(() => {
+    const w = window.innerWidth;
+    let def = 1920;
+    if (w < 400) def = 800;
+    else if (w < 800) def = 1280;
+    else if (w < 1400) def = 1920;
+    else def = 2560;
+    setResolutionMax(def);
+    // Decide if we should show the camera button (mobile/tablet or coarse pointer)
+    const isCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    const smallScreen = w < 900;
+    setShowCamera(isCoarse || smallScreen);
+    const onResize = () => {
+      const ww = window.innerWidth;
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      setShowCamera(coarse || ww < 900);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // Recompute when algorithm settings change and we have a source image
   useEffect(() => {
@@ -143,35 +194,31 @@ function ConnectedApp() {
   return (
     <div className={styles.container}>
       <div className={styles.content}>
-        {/* Wallet below header, right-aligned, no extra borders via CSS overrides */}
-        <div style={{ display: "flex", justifyContent: "flex-end", margin: "8px 0 16px", width: "100%" }}>
-          <Wallet />
-        </div>
 
         {!srcImage ? (
           // Center the two action buttons in the middle of the screen until an image is chosen
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "calc(100vh - 140px)",
-            width: "100%",
-          }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 520 }}>
-              <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+          <div className="centerScreen">
+            <div style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8, width: "100%", maxWidth: 360 }}>
+              {showCamera && (
+                <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+              )}
               <button type="button" onClick={onUploadPicture} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Upload a Picture</button>
             </div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 520, margin: "0 auto 1rem" }}>
-            <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+          <div style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8, width: "100%", maxWidth: 520, margin: "0 auto 1rem" }}>
+            {showCamera && (
+              <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
+            )}
             <button type="button" onClick={onUploadPicture} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Upload a Picture</button>
           </div>
         )}
 
         {srcImage && (
           <>
-            <canvas ref={canvasRef} style={{ width: "100%", height: "auto", display: "block", maxWidth: "100%" }} />
+            <div className="mediaWrap">
+              <canvas ref={canvasRef} style={{ width: "100%", height: "auto", display: "block" }} />
+            </div>
             <PictureSettings
               algo={algo}
               setAlgo={setAlgo}
@@ -185,8 +232,10 @@ function ConnectedApp() {
               setRLength={setRLength}
               rdecay={rdecay}
               setRDecay={setRDecay}
+              resolutionMax={resolutionMax}
+              setResolutionMax={setResolutionMax}
             />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 520, margin: "1rem auto 0" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 520, margin: "1rem auto 0", paddingBottom: "6vh" }}>
               <button type="button" onClick={onDownload} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Download as PNG</button>
               <button type="button" disabled style={{ width: "100%", padding: "0.5rem", fontSize: 14, opacity: 0.5, pointerEvents: "none" }}>Mint (TBA)</button>
             </div>
@@ -215,18 +264,5 @@ function ConnectedApp() {
 }
 
 export default function Home() {
-  const { isConnected } = useAccount();
-  // Wallet below header on the right while disconnected
-  if (!isConnected) {
-    return (
-      <main className={styles.container}>
-        <div className={styles.content}>
-          <div style={{ display: "flex", justifyContent: "flex-end", margin: "8px 0 16px", width: "100%" }}>
-            <Wallet />
-          </div>
-        </div>
-      </main>
-    );
-  }
   return <ConnectedApp />;
 }
