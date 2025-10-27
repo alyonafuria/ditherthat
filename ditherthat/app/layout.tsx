@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import { Inter, Source_Code_Pro } from "next/font/google";
 import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "@/minikit.config";
@@ -73,6 +74,17 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+const asciiMono = localFont({
+  src: [
+    { path: "../public/fonts/Courier New.ttf", weight: "400", style: "normal" },
+    { path: "../public/fonts/Courier New Italic.ttf", weight: "400", style: "italic" },
+    { path: "../public/fonts/Courier New Bold.ttf", weight: "700", style: "normal" },
+    { path: "../public/fonts/Courier New Bold Italic.ttf", weight: "700", style: "italic" },
+  ],
+  variable: "--font-ascii-mono",
+  display: "swap",
+});
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -90,7 +102,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${sourceCodePro.variable}`}>
+      <body className={`${inter.variable} ${sourceCodePro.variable} ${asciiMono.variable}`}>
         <RootProvider>
           <SafeArea>
             <div className="appShell">

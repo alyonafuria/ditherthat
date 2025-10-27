@@ -213,7 +213,7 @@ img, canvas, video, svg {
 
 /* Stabilize ASCII marquee rendering across environments */
 .headerMarqueeInner {
-  font-family: DejaVu Sans Mono, "Courier New", "Lucida Console", Menlo, Monaco, Consolas, monospace !important;
+  font-family: var(--font-ascii-mono), DejaVu Sans Mono, "Courier New", "Lucida Console", Menlo, Monaco, Consolas, monospace !important;
   line-height: 1.3 !important;
   letter-spacing: 0 !important;
   font-variant-ligatures: none;
@@ -221,6 +221,12 @@ img, canvas, video, svg {
   text-rendering: geometricPrecision;
   font-feature-settings: "liga" 0, "clig" 0, "kern" 0;
   white-space: pre;
+}
+/* Force the actual ASCII lines (<pre>) to use the marquee font, not the global pre font */
+.headerMarqueeInner pre {
+  font-family: var(--font-ascii-mono), "Courier New", "Lucida Console", Menlo, Monaco, Consolas, monospace !important;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "clig" 0, "kern" 0;
 }
 
 /* Align an element to the right edge of the viewport without changing structure */
