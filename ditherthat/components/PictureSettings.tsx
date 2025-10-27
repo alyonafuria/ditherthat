@@ -18,6 +18,8 @@ type Props = {
   setRLength: React.Dispatch<React.SetStateAction<number>>;
   rdecay: number;
   setRDecay: React.Dispatch<React.SetStateAction<number>>;
+  resolutionMax: number;
+  setResolutionMax: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const rowStyle: React.CSSProperties = {
@@ -138,6 +140,8 @@ export function PictureSettings({
   setRLength,
   rdecay,
   setRDecay,
+  resolutionMax,
+  setResolutionMax,
 }: Props) {
   const [showAlgoHelp, setShowAlgoHelp] = React.useState(false);
   const [showBayerHelp, setShowBayerHelp] = React.useState(false);
@@ -156,6 +160,36 @@ export function PictureSettings({
 
   return (
   <div style={{ textAlign: "center", marginTop: "1rem", width: "100%" }}>
+      <div style={rowStyle}>
+        <label style={labelStyle}>Resolution:</label>
+        <div style={rangeContainer}>
+          {/* Discrete slider with 3 steps: 0=800, 1=1920, 2=2560 */}
+          {(() => {
+            const options = [800, 1920, 2560];
+            const idx = Math.max(0, options.findIndex((v) => v === resolutionMax));
+            return (
+              <>
+                <input
+                  type="range"
+                  min={0}
+                  max={2}
+                  step={1}
+                  value={idx < 0 ? 1 : idx}
+                  onChange={(e) => {
+                    const nextIdx = Number(e.target.value);
+                    setResolutionMax(options[nextIdx]);
+                  }}
+                  className="rangeSlim"
+                  style={rangeStyle}
+                  aria-label="Processing resolution"
+                />
+                <div style={valueBadge}>{resolutionMax}px</div>
+              </>
+            );
+          })()}
+        </div>
+        <div />
+      </div>
       <div style={rowStyle}>
         <label style={labelStyle}>Algorithm:</label>
         <select

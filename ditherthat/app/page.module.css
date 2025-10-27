@@ -1,7 +1,7 @@
 .container {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .headerWrapper {
@@ -15,10 +15,8 @@
 .content {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1rem 5vh;
-  gap: 1rem;
+  flex: 1;
+  padding: 0 1rem;
 }
 
 /* Ensure the single connect button sits prominently */

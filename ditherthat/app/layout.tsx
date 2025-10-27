@@ -4,7 +4,7 @@ import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { minikitConfig } from "@/minikit.config";
 import { RootProvider } from "./rootProvider";
 import "./globals.css";
-import HeaderBanner from "@/components/HeaderBanner";
+import HeaderRegion from "@/components/HeaderRegion";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -42,17 +42,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <RootProvider>
-      <html lang="en">
-        <body className={`${inter.variable} ${sourceCodePro.variable}`}>
+    <html lang="en">
+      <body className={`${inter.variable} ${sourceCodePro.variable}`}>
+        <RootProvider>
           <SafeArea>
-            <div>
-              <HeaderBanner />
-              {children}
+            <div className="appShell">
+              <HeaderRegion />
+              <main className="mainArea">
+                <div className="centerWrap">
+                  {children}
+                </div>
+              </main>
             </div>
           </SafeArea>
-        </body>
-      </html>
-    </RootProvider>
+        </RootProvider>
+      </body>
+    </html>
   );
 }
