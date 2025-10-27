@@ -16,7 +16,7 @@ import {
 } from "@/lib/wasm/ditherLoader";
 import { PictureSettings } from "../components/PictureSettings";
 
-export default function Home() {
+function ConnectedApp() {
   // If you need to verify the user's identity, you can use the useQuickAuth hook.
   // This hook will verify the user's signature and return the user's FID. You can update
   // this to meet your needs. See the /app/api/auth/route.ts file for more details.
@@ -27,7 +27,6 @@ export default function Home() {
   // }>("/api/auth");
 
   const { setMiniAppReady, isMiniAppReady } = useMiniKit();
-  const { isConnected } = useAccount();
   // Hooks must not be conditional: declare all up-front
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -141,20 +140,6 @@ export default function Home() {
     }
   }, [setMiniAppReady, isMiniAppReady]);
 
-  // If not connected, show only a centered Connect Wallet button (Coinbase Smart Wallet only via provider config)
-  if (!isConnected) {
-    return (
-      <main className={styles.container}>
-        <div className={styles.content}>
-          <div style={{ display: "flex", justifyContent: "flex-end", margin: "8px 0 16px", width: "100%" }}>
-            <Wallet />
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  // Connected UI
   return (
     <div className={styles.container}>
       <div className={styles.content}>
@@ -227,4 +212,21 @@ export default function Home() {
       </div>
     </div>
   );
+}
+
+export default function Home() {
+  const { isConnected } = useAccount();
+  // Wallet below header on the right while disconnected
+  if (!isConnected) {
+    return (
+      <main className={styles.container}>
+        <div className={styles.content}>
+          <div style={{ display: "flex", justifyContent: "flex-end", margin: "8px 0 16px", width: "100%" }}>
+            <Wallet />
+          </div>
+        </div>
+      </main>
+    );
+  }
+  return <ConnectedApp />;
 }
