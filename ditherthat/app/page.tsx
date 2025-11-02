@@ -25,12 +25,10 @@ function ConnectedApp() {
   // }>("/api/auth");
 
   const { setMiniAppReady, isMiniAppReady } = useMiniKit();
-  // Hooks must not be conditional: declare all up-front
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Algorithm choices: Bayer and Blue as separate ordered options; diffusion variants; Riemersma optional
   type Algo = "bayer" | "blue" | "simple" | "floyd" | "jjn" | "atkinson" | "riemersma";
   const [algo, setAlgo] = useState<Algo>("bayer");
   const [level, setLevel] = useState<number>(1);
@@ -46,13 +44,42 @@ function ConnectedApp() {
   const onDownload = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas || !srcImage) return;
-    const url = canvas.toDataURL("image/png");
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "dither.png";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+
+    const isIOS = () =>
+      typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const supportsDownloadAttr = () => "download" in document.createElement("a");
+
+    // Modern path: Blob -> object URL -> anchor download
+    if (supportsDownloadAttr() && !isIOS()) {
+      // toBlob is async; still ok when triggered by a click handler
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "dither.png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        // Revoke after a tick to allow navigation to start
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }, "image/png");
+      return;
+    }
+
+    // Fallback (iOS Safari and older browsers): open data URL
+    const dataUrl = canvas.toDataURL("image/png");
+    // Try a new tab first
+    const w = window.open();
+    if (w && w.document) {
+      // Minimal document with the image so user can long-press/save
+      w.document.write(
+        `<!doctype html><title>Dither PNG</title><meta name="viewport" content="width=device-width,initial-scale=1"/><img src="${dataUrl}" style="width:100%;height:auto;display:block"/>`
+      );
+    } else {
+      // As a last resort, navigate current tab
+      window.location.href = dataUrl;
+    }
   }, [srcImage]);
 
   const doDither = useCallback(async (src: ImageData) => {
