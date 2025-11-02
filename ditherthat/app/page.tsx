@@ -46,7 +46,7 @@ function ConnectedApp() {
     if (!canvas || !srcImage) return;
 
     const isIOS = () =>
-      typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      typeof navigator !== "undefined" && /iPad|iPhone|iPod/.test(navigator.userAgent);
     const supportsDownloadAttr = () => "download" in document.createElement("a");
 
     // Modern path: Blob -> object URL -> anchor download
