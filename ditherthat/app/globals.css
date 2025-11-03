@@ -86,8 +86,8 @@
     font: inherit;
   }
   input:focus, textarea:focus, select:focus, button:focus, a:focus {
-    outline: 3px solid var(--accent);
-    outline-offset: 2px;
+    outline: none !important;
+    outline-offset: 0 !important;
   }
 
   button {
@@ -129,8 +129,8 @@
   }
   :where([class*="ock"], [class*="onchainkit"]) button:focus-visible,
   :where([class*="ock"], [class*="onchainkit"]) a[role="button"]:focus-visible {
-    outline: 3px solid var(--accent) !important;
-    outline-offset: 2px !important;
+    outline: none !important;
+    outline-offset: 0 !important;
   }
   :where([class*="ock"], [class*="onchainkit"]) [role="dialog"],
   :where([class*="ock"], [class*="onchainkit"]) .modal {

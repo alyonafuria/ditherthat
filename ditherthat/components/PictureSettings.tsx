@@ -76,6 +76,32 @@ const valueBadge: React.CSSProperties = {
   fontVariantNumeric: "tabular-nums",
 };
 
+const groupBox: React.CSSProperties = {
+  width: "100%",
+  maxWidth: 520,
+  margin: "0 auto 0",
+  display: "flex",
+  flexDirection: "column",
+  gap: 0,
+  border: "2px solid #111",
+  borderRadius: 1,
+  padding: 8,
+};
+
+function MobileGroup({ first = false, children }: { first?: boolean; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        ...groupBox,
+        // Remove top border on subsequent groups so seams are a single line
+        borderTopWidth: first ? 2 : 0,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 const smallBtn: React.CSSProperties = {
   fontSize: 12,
   padding: 0,
@@ -149,6 +175,18 @@ export function PictureSettings({
   const [showRiemersmaHelp, setShowRiemersmaHelp] = React.useState(false);
   const [showRDecayHelp, setShowRDecayHelp] = React.useState(false);
 
+  const [isMobile, setIsMobile] = React.useState(false);
+  React.useEffect(() => {
+    const compute = () => {
+      const coarse = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      const narrow = typeof window !== "undefined" && window.innerWidth < 640;
+      setIsMobile(Boolean(coarse || narrow));
+    };
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, []);
+
   // Auto-collapse all help panels when algorithm changes
   React.useEffect(() => {
     setShowAlgoHelp(false);
@@ -158,11 +196,41 @@ export function PictureSettings({
     setShowRDecayHelp(false);
   }, [algo]);
 
-  return (
-  <div style={{ textAlign: "center", marginTop: "1rem", width: "100%" }}>
-      <div style={rowStyle}>
-        <label style={labelStyle}>Resolution:</label>
-        <div style={rangeContainer}>
+  return (<div style={{ textAlign: "center", marginTop: "1rem", width: "100%" }}>
+      {isMobile ? (
+        <MobileGroup first>
+          <label style={{ ...labelStyle, width: "100%" }}>Resolution:</label>
+          <div style={rangeContainer}>
+            {(() => {
+              const options = [480, 640, 800, 1920, 2560];
+              let idx = options.findIndex((v) => v === resolutionMax);
+              if (idx < 0) idx = 3;
+              return (
+                <>
+                  <input
+                    type="range"
+                    min={0}
+                    max={4}
+                    step={1}
+                    value={idx}
+                    onChange={(e) => {
+                      const nextIdx = Number(e.target.value);
+                      setResolutionMax(options[nextIdx]);
+                    }}
+                    className="rangeSlim"
+                    style={rangeStyle}
+                    aria-label="Processing resolution"
+                  />
+                  <div style={valueBadge}>{resolutionMax}px</div>
+                </>
+              );
+            })()}
+          </div>
+          </MobileGroup>
+      ) : (
+        <div style={rowStyle}>
+          <label style={labelStyle}>Resolution:</label>
+          <div style={rangeContainer}>
           {/* Discrete slider with 5 steps: 0=480, 1=640, 2=800, 3=1920, 4=2560 */}
           {(() => {
             const options = [480, 640, 800, 1920, 2560];
@@ -191,33 +259,64 @@ export function PictureSettings({
               </>
             );
           })()}
+          </div>
+          <div />
         </div>
-        <div />
-      </div>
-      <div style={rowStyle}>
-        <label style={labelStyle}>Algorithm:</label>
-        <select
-          value={algo}
-          onChange={(e) => setAlgo(e.target.value as Algo)}
-          style={inputStyle}
-        >
-          <option value="bayer">Bayer (ordered)</option>
-          <option value="blue">Blue noise (ordered)</option>
-          <option value="simple">Simple 2D diffusion</option>
-          <option value="floyd">Floyd–Steinberg</option>
-          <option value="jjn">Jarvis–Judice–Ninke (JJN)</option>
-          <option value="atkinson">Atkinson</option>
-          <option value="riemersma">Riemersma (Hilbert)</option>
-        </select>
-        <button
-          type="button"
-          aria-label="What does this algorithm do?"
-          onClick={() => setShowAlgoHelp((v) => !v)}
-          style={smallBtn}
-        >
-          ?
-        </button>
-      </div>
+      )}
+
+      {isMobile ? (
+        <MobileGroup>
+          <label style={{ ...labelStyle, width: "100%" }}>Algorithm:</label>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 40px", gap: 8 }}>
+            <select
+              value={algo}
+              onChange={(e) => setAlgo(e.target.value as Algo)}
+              style={inputStyle}
+            >
+              <option value="bayer">Bayer (ordered)</option>
+              <option value="blue">Blue noise (ordered)</option>
+              <option value="simple">Simple 2D diffusion</option>
+              <option value="floyd">Floyd–Steinberg</option>
+              <option value="jjn">Jarvis–Judice–Ninke (JJN)</option>
+              <option value="atkinson">Atkinson</option>
+              <option value="riemersma">Riemersma (Hilbert)</option>
+            </select>
+            <button
+              type="button"
+              aria-label="What does this algorithm do?"
+              onClick={() => setShowAlgoHelp((v: boolean) => !v)}
+              style={smallBtn}
+            >
+              ?
+            </button>
+          </div>
+        </MobileGroup>
+      ) : (
+        <div style={rowStyle}>
+          <label style={labelStyle}>Algorithm:</label>
+          <select
+            value={algo}
+            onChange={(e) => setAlgo(e.target.value as Algo)}
+            style={inputStyle}
+          >
+            <option value="bayer">Bayer (ordered)</option>
+            <option value="blue">Blue noise (ordered)</option>
+            <option value="simple">Simple 2D diffusion</option>
+            <option value="floyd">Floyd–Steinberg</option>
+            <option value="jjn">Jarvis–Judice–Ninke (JJN)</option>
+            <option value="atkinson">Atkinson</option>
+            <option value="riemersma">Riemersma (Hilbert)</option>
+          </select>
+          <button
+            type="button"
+            aria-label="What does this algorithm do?"
+            onClick={() => setShowAlgoHelp((v: boolean) => !v)}
+            style={smallBtn}
+          >
+            ?
+          </button>
+        </div>
+      )}
       {showAlgoHelp && (
         <div style={{ maxWidth: 520, margin: "0 auto" }}>
           <Alert>
@@ -240,43 +339,87 @@ export function PictureSettings({
 
       {algo === "bayer" && (
         <>
-          <div style={rowStyle}>
-            <label style={labelStyle}>Level (0–5):</label>
-            <div style={rangeContainer}>
-              <input
-                type="range"
-                min={0}
-                max={5}
-                step={1}
-                value={level}
-                onChange={(e) => setLevel(Number(e.target.value))}
-                className="rangeSlim"
-                style={rangeStyle}
-                aria-label="Bayer level"
-              />
-              <div style={valueBadge}>{level}</div>
+          {isMobile ? (
+            <MobileGroup>
+              <label style={{ ...labelStyle, width: "100%" }}>Level (0–5):</label>
+              <div style={{ ...rangeContainer, justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+                  <input
+                    type="range"
+                    min={0}
+                    max={5}
+                    step={1}
+                    value={level}
+                    onChange={(e) => setLevel(Number(e.target.value))}
+                    className="rangeSlim"
+                    style={rangeStyle}
+                    aria-label="Bayer level"
+                  />
+                  <div style={valueBadge}>{level}</div>
+                </div>
+                <button
+                  type="button"
+                  aria-label="What do these Bayer settings do?"
+                  onClick={() => setShowBayerHelp((v: boolean) => !v)}
+                  style={smallBtn}
+                >
+                  ?
+                </button>
+              </div>
+              {/* Invert toggle stays inline but is part of the same bordered group */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+                <label style={{ ...labelStyle, width: 120 }}>Invert:</label>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, height: 40 }}>
+                  <input
+                    type="checkbox"
+                    checked={invert}
+                    onChange={(e) => setInvert(e.target.checked)}
+                    style={{ width: 32, height: 32, accentColor: "#fff" }}
+                  />
+                </div>
+              </div>
+            </MobileGroup>
+          ) : (
+            <div style={rowStyle}>
+              <label style={labelStyle}>Level (0–5):</label>
+              <div style={rangeContainer}>
+                <input
+                  type="range"
+                  min={0}
+                  max={5}
+                  step={1}
+                  value={level}
+                  onChange={(e) => setLevel(Number(e.target.value))}
+                  className="rangeSlim"
+                  style={rangeStyle}
+                  aria-label="Bayer level"
+                />
+                <div style={valueBadge}>{level}</div>
+              </div>
+              <button
+                type="button"
+                aria-label="What do these Bayer settings do?"
+                onClick={() => setShowBayerHelp((v: boolean) => !v)}
+                style={smallBtn}
+              >
+                ?
+              </button>
             </div>
-            <button
-              type="button"
-              aria-label="What do these Bayer settings do?"
-              onClick={() => setShowBayerHelp((v) => !v)}
-              style={smallBtn}
-            >
-              ?
-            </button>
-          </div>
-          <div style={rowStyle}>
-            <label style={labelStyle}>Invert:</label>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, height: 40 }}>
-              <input
-                type="checkbox"
-                checked={invert}
-                onChange={(e) => setInvert(e.target.checked)}
-                style={{ width: 32, height: 32, accentColor: "#fff" }}
-              />
+          )}
+          {!isMobile && (
+            <div style={rowStyle}>
+              <label style={labelStyle}>Invert:</label>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, height: 40 }}>
+                <input
+                  type="checkbox"
+                  checked={invert}
+                  onChange={(e) => setInvert(e.target.checked)}
+                  style={{ width: 32, height: 32, accentColor: "#fff" }}
+                />
+              </div>
+              <div />
             </div>
-            <div />
-          </div>
+          )}
         </>
       )}
       {algo === "bayer" && showBayerHelp && (
@@ -302,26 +445,51 @@ export function PictureSettings({
       )}
 
       {algo === "blue" && (
-        <div style={rowStyle}>
-          <label style={labelStyle}>Map size:</label>
-          <select
-            value={blueSize}
-            onChange={(e) => setBlueSize(Number(e.target.value))}
-            style={{ ...inputStyle, maxWidth: 160, justifySelf: "stretch" }}
-          >
-            <option value={32}>32×32</option>
-            <option value={64}>64×64</option>
-            <option value={128}>128×128</option>
-          </select>
-          <button
-            type="button"
-            aria-label="What does Blue noise map size do?"
-            onClick={() => setShowBlueHelp((v) => !v)}
-            style={smallBtn}
-          >
-            ?
-          </button>
-        </div>
+        isMobile ? (
+          <MobileGroup>
+            <label style={{ ...labelStyle, width: "100%" }}>Map size:</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 40px", gap: 8 }}>
+              <select
+                value={blueSize}
+                onChange={(e) => setBlueSize(Number(e.target.value))}
+                style={{ ...inputStyle, maxWidth: 160, justifySelf: "stretch" }}
+              >
+                <option value={32}>32×32</option>
+                <option value={64}>64×64</option>
+                <option value={128}>128×128</option>
+              </select>
+              <button
+                type="button"
+                aria-label="What does Blue noise map size do?"
+                onClick={() => setShowBlueHelp((v: boolean) => !v)}
+                style={smallBtn}
+              >
+                ?
+              </button>
+            </div>
+          </MobileGroup>
+        ) : (
+          <div style={rowStyle}>
+            <label style={labelStyle}>Map size:</label>
+            <select
+              value={blueSize}
+              onChange={(e) => setBlueSize(Number(e.target.value))}
+              style={{ ...inputStyle, maxWidth: 160, justifySelf: "stretch" }}
+            >
+              <option value={32}>32×32</option>
+              <option value={64}>64×64</option>
+              <option value={128}>128×128</option>
+            </select>
+            <button
+              type="button"
+              aria-label="What does Blue noise map size do?"
+              onClick={() => setShowBlueHelp((v: boolean) => !v)}
+              style={smallBtn}
+            >
+              ?
+            </button>
+          </div>
+        )
       )}
       {algo === "blue" && showBlueHelp && (
         <div style={{ maxWidth: 520, margin: "0 auto" }}>
@@ -347,56 +515,117 @@ export function PictureSettings({
 
       {algo === "riemersma" && (
         <>
-          <div style={rowStyle}>
-            <label style={labelStyle}>List length:</label>
-            <div style={rangeContainer}>
-              <input
-                type="range"
-                min={8}
-                max={256}
-                step={1}
-                value={rlength}
-                onChange={(e) => setRLength(Number(e.target.value))}
-                className="rangeSlim"
-                style={rangeStyle}
-                aria-label="Riemersma list length"
-              />
-              <div style={valueBadge}>{rlength}</div>
+          {isMobile ? (
+            <MobileGroup>
+              <label style={{ ...labelStyle, width: "100%" }}>List length:</label>
+              <div style={{ ...rangeContainer, justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+                  <input
+                    type="range"
+                    min={8}
+                    max={256}
+                    step={1}
+                    value={rlength}
+                    onChange={(e) => setRLength(Number(e.target.value))}
+                    className="rangeSlim"
+                    style={rangeStyle}
+                    aria-label="Riemersma list length"
+                  />
+                  <div style={valueBadge}>{rlength}</div>
+                </div>
+                <button
+                  type="button"
+                  aria-label="What do Riemersma settings do?"
+                  onClick={() => setShowRiemersmaHelp((v: boolean) => !v)}
+                  style={smallBtn}
+                >
+                  ?
+                </button>
+              </div>
+            </MobileGroup>
+          ) : (
+            <div style={rowStyle}>
+              <label style={labelStyle}>List length:</label>
+              <div style={rangeContainer}>
+                <input
+                  type="range"
+                  min={8}
+                  max={256}
+                  step={1}
+                  value={rlength}
+                  onChange={(e) => setRLength(Number(e.target.value))}
+                  className="rangeSlim"
+                  style={rangeStyle}
+                  aria-label="Riemersma list length"
+                />
+                <div style={valueBadge}>{rlength}</div>
+              </div>
+              <button
+                type="button"
+                aria-label="What do Riemersma settings do?"
+                onClick={() => setShowRiemersmaHelp((v: boolean) => !v)}
+                style={smallBtn}
+              >
+                ?
+              </button>
             </div>
-            <button
-              type="button"
-              aria-label="What do Riemersma settings do?"
-              onClick={() => setShowRiemersmaHelp((v) => !v)}
-              style={smallBtn}
-            >
-              ?
-            </button>
-          </div>
-          <div style={rowStyle}>
-            <label style={labelStyle}>r (decay):</label>
-            <div style={rangeContainer}>
-              <input
-                type="range"
-                min={0.05}
-                max={0.9}
-                step={0.01}
-                value={rdecay}
-                onChange={(e) => setRDecay(Number(e.target.value))}
-                className="rangeSlim"
-                style={rangeStyle}
-                aria-label="Riemersma decay r"
-              />
-              <div style={valueBadge}>{rdecay.toFixed(2)}</div>
+          )}
+
+          {isMobile ? (
+            <MobileGroup>
+              <label style={{ ...labelStyle, width: "100%" }}>r (decay):</label>
+              <div style={{ ...rangeContainer, justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
+                  <input
+                    type="range"
+                    min={0.05}
+                    max={0.9}
+                    step={0.01}
+                    value={rdecay}
+                    onChange={(e) => setRDecay(Number(e.target.value))}
+                    className="rangeSlim"
+                    style={rangeStyle}
+                    aria-label="Riemersma decay r"
+                  />
+                  <div style={valueBadge}>{rdecay.toFixed(2)}</div>
+                </div>
+                <button
+                  type="button"
+                  aria-label="What does r (decay) do?"
+                  onClick={() => setShowRDecayHelp((v: boolean) => !v)}
+                  style={smallBtn}
+                >
+                  ?
+                </button>
+              </div>
+            </MobileGroup>
+          ) : (
+            <div style={rowStyle}>
+              <label style={labelStyle}>r (decay):</label>
+              <div style={rangeContainer}>
+                <input
+                  type="range"
+                  min={0.05}
+                  max={0.9}
+                  step={0.01}
+                  value={rdecay}
+                  onChange={(e) => setRDecay(Number(e.target.value))}
+                  className="rangeSlim"
+                  style={rangeStyle}
+                  aria-label="Riemersma decay r"
+                />
+                <div style={valueBadge}>{rdecay.toFixed(2)}</div>
+              </div>
+              <button
+                type="button"
+                aria-label="What does r (decay) do?"
+                onClick={() => setShowRDecayHelp((v) => !v)}
+                style={smallBtn}
+              >
+                ?
+              </button>
             </div>
-            <button
-              type="button"
-              aria-label="What does r (decay) do?"
-              onClick={() => setShowRDecayHelp((v) => !v)}
-              style={smallBtn}
-            >
-              ?
-            </button>
-          </div>
+          )}
         </>
       )}
       {algo === "riemersma" && showRiemersmaHelp && (
