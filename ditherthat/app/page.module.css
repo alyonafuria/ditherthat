@@ -30,6 +30,8 @@
 .fullBleed {
   width: 100vw;
   margin-left: calc(50% - 50vw);
+  display: flex;
+  justify-content: center;
 }
 
 /* Ensure the single connect button sits prominently */

@@ -29,6 +29,8 @@ function ConnectedApp() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const topControlsRef = useRef<HTMLDivElement | null>(null);
+  const [canvasMaxH, setCanvasMaxH] = useState<number | null>(null);
   type Algo = "bayer" | "blue" | "simple" | "floyd" | "jjn" | "atkinson" | "riemersma";
   const [algo, setAlgo] = useState<Algo>("bayer");
   const [level, setLevel] = useState<number>(1);
@@ -144,6 +146,26 @@ function ConnectedApp() {
   const onTakePhoto = useCallback(() => {
     cameraInputRef.current?.click();
   }, []);
+
+  // Desktop: fit canvas into current screen content (below top controls)
+  useEffect(() => {
+    const compute = () => {
+      if (!srcImage) return;
+      const ww = window.innerWidth;
+      if (ww < 1024) {
+        setCanvasMaxH(null);
+        return;
+      }
+      const el = topControlsRef.current;
+      const bottom = el ? el.getBoundingClientRect().bottom : 0;
+      const gap = 24; // spacing between blocks
+      const available = Math.max(200, Math.floor(window.innerHeight - bottom - gap));
+      setCanvasMaxH(available);
+    };
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, [srcImage]);
 
   // Live recompute of srcImage when resolution changes, using the original bitmap
   useEffect(() => {
@@ -262,7 +284,7 @@ function ConnectedApp() {
             </div>
           </div>
         ) : (
-          <div className={styles.controls} style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8, margin: "0 auto 1rem" }}>
+          <div ref={topControlsRef} className={styles.controls} style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8, margin: "0 auto 1rem" }}>
             {showCamera && (
               <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
             )}
@@ -273,7 +295,16 @@ function ConnectedApp() {
         {srcImage && (
           <>
             <div className={`mediaWrap ${styles.fullBleed}`}>
-              <canvas ref={canvasRef} style={{ width: "100%", height: "auto", display: "block" }} />
+              <canvas
+                ref={canvasRef}
+                style={{
+                  width: canvasMaxH ? "auto" : "100%",
+                  height: "auto",
+                  display: "block",
+                  maxWidth: "100%",
+                  maxHeight: canvasMaxH ? `${canvasMaxH}px` : undefined,
+                }}
+              />
             </div>
             <div className={styles.controls}>
               <PictureSettings
