@@ -19,6 +19,19 @@
   padding: 0 1rem;
 }
 
+/* Centered narrow column for controls */
+.controls {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* Full-bleed section (edge-to-edge), ignoring page padding */
+.fullBleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
 /* Ensure the single connect button sits prominently */
 .content :global(button),
 .content :global(a[role="button"]) {

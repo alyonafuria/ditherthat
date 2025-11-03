@@ -20,6 +20,10 @@ type Props = {
   setRDecay: React.Dispatch<React.SetStateAction<number>>;
   resolutionMax: number;
   setResolutionMax: React.Dispatch<React.SetStateAction<number>>;
+  primaryColor: string;
+  setPrimaryColor: React.Dispatch<React.SetStateAction<string>>;
+  secondaryColor: string;
+  setSecondaryColor: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const rowStyle: React.CSSProperties = {
@@ -168,6 +172,10 @@ export function PictureSettings({
   setRDecay,
   resolutionMax,
   setResolutionMax,
+  primaryColor,
+  setPrimaryColor,
+  secondaryColor,
+  setSecondaryColor,
 }: Props) {
   const [showAlgoHelp, setShowAlgoHelp] = React.useState(false);
   const [showBayerHelp, setShowBayerHelp] = React.useState(false);
@@ -199,6 +207,56 @@ export function PictureSettings({
   return (<div style={{ textAlign: "center", marginTop: "1rem", width: "100%" }}>
       {isMobile ? (
         <MobileGroup first>
+          <label style={{ ...labelStyle, width: "100%" }}>Colors:</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, justifyContent: "space-between", flexWrap: "nowrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12 }}>Primary:</span>
+              <input
+                aria-label="Pick primary color"
+                type="color"
+                value={primaryColor}
+                onChange={(e) => setPrimaryColor(e.target.value)}
+                style={{ width: 40, height: 40, border: "2px solid #111", padding: 0 }}
+              />
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 12 }}>Secondary:</span>
+              <input
+                aria-label="Pick secondary color"
+                type="color"
+                value={secondaryColor}
+                onChange={(e) => setSecondaryColor(e.target.value)}
+                style={{ width: 40, height: 40, border: "2px solid #111", padding: 0 }}
+              />
+            </div>
+          </div>
+        </MobileGroup>
+      ) : (
+        <div style={rowStyle}>
+          <label style={labelStyle}>Colors:</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "nowrap" }}>
+            <span>Primary:</span>
+            <input
+              aria-label="Pick primary color"
+              type="color"
+              value={primaryColor}
+              onChange={(e) => setPrimaryColor(e.target.value)}
+              style={{ width: 40, height: 40, border: "2px solid #111", padding: 0 }}
+            />
+            <span>Secondary:</span>
+            <input
+              aria-label="Pick secondary color"
+              type="color"
+              value={secondaryColor}
+              onChange={(e) => setSecondaryColor(e.target.value)}
+              style={{ width: 40, height: 40, border: "2px solid #111", padding: 0 }}
+            />
+          </div>
+          <div />
+        </div>
+      )}
+      {isMobile ? (
+        <MobileGroup>
           <label style={{ ...labelStyle, width: "100%" }}>Resolution:</label>
           <div style={rangeContainer}>
             {(() => {

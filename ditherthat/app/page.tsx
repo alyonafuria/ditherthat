@@ -38,6 +38,8 @@ function ConnectedApp() {
   const [rdecay, setRDecay] = useState<number>(0.1667);
   const [srcImage, setSrcImage] = useState<ImageData | null>(null);
   const [resolutionMax, setResolutionMax] = useState<number>(1920);
+  const [primaryColor, setPrimaryColor] = useState<string>("#000000");
+  const [secondaryColor, setSecondaryColor] = useState<string>("#ffffff");
   const [showCamera, setShowCamera] = useState<boolean>(false);
   const [origBitmap, setOrigBitmap] = useState<ImageBitmap | null>(null);
 
@@ -110,8 +112,35 @@ function ConnectedApp() {
         Math.max(0.05, Math.min(0.9, rdecay as number))
       );
     }
+    // Map binary output (0 or 255) to chosen colors
+    const hexToRgb = (hex: string): [number, number, number] => {
+      let h = hex.trim();
+      if (h.startsWith("#")) h = h.slice(1);
+      if (h.length === 3) {
+        const r = parseInt(h[0] + h[0], 16);
+        const g = parseInt(h[1] + h[1], 16);
+        const b = parseInt(h[2] + h[2], 16);
+        return [r, g, b];
+      }
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return [r, g, b];
+    };
+    const [pr, pg, pb] = hexToRgb(primaryColor);
+    const [sr, sg, sb] = hexToRgb(secondaryColor);
+    const data = out.data;
+    for (let i = 0; i < data.length; i += 4) {
+      // Check red channel as binary signal (0 or 255)
+      const on = data[i] >= 128;
+      if (on) {
+        data[i] = sr; data[i + 1] = sg; data[i + 2] = sb; data[i + 3] = 255;
+      } else {
+        data[i] = pr; data[i + 1] = pg; data[i + 2] = pb; data[i + 3] = 255;
+      }
+    }
     ctx.putImageData(out, 0, 0);
-  }, [algo, invert, level, blueSize, rlength, rdecay]);
+  }, [algo, invert, level, blueSize, rlength, rdecay, primaryColor, secondaryColor]);
   const onTakePhoto = useCallback(() => {
     cameraInputRef.current?.click();
   }, []);
@@ -210,7 +239,7 @@ function ConnectedApp() {
         setError("Recompute failed. Try another image or rebuild WASM.");
       }
     })();
-  }, [algo, level, invert, blueSize, rlength, rdecay, srcImage, doDither]);
+  }, [algo, level, invert, blueSize, rlength, rdecay, primaryColor, secondaryColor, srcImage, doDither]);
 
   useEffect(() => {
     if (!isMiniAppReady) {
@@ -225,7 +254,7 @@ function ConnectedApp() {
         {!srcImage ? (
           // Center the two action buttons in the middle of the screen until an image is chosen
           <div className="centerScreen">
-            <div style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8, width: "100%", maxWidth: 360 }}>
+            <div className={styles.controls} style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8 }}>
               {showCamera && (
                 <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
               )}
@@ -233,7 +262,7 @@ function ConnectedApp() {
             </div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8, width: "100%", maxWidth: 520, margin: "0 auto 1rem" }}>
+          <div className={styles.controls} style={{ display: "grid", gridTemplateColumns: showCamera ? "1fr 1fr" : "1fr", gap: 8, margin: "0 auto 1rem" }}>
             {showCamera && (
               <button type="button" onClick={onTakePhoto} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Take Photo</button>
             )}
@@ -243,26 +272,32 @@ function ConnectedApp() {
 
         {srcImage && (
           <>
-            <div className="mediaWrap">
+            <div className={`mediaWrap ${styles.fullBleed}`}>
               <canvas ref={canvasRef} style={{ width: "100%", height: "auto", display: "block" }} />
             </div>
-            <PictureSettings
-              algo={algo}
-              setAlgo={setAlgo}
-              level={level}
-              setLevel={setLevel}
-              invert={invert}
-              setInvert={setInvert}
-              blueSize={blueSize}
-              setBlueSize={setBlueSize}
-              rlength={rlength}
-              setRLength={setRLength}
-              rdecay={rdecay}
-              setRDecay={setRDecay}
-              resolutionMax={resolutionMax}
-              setResolutionMax={setResolutionMax}
-            />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%", maxWidth: 520, margin: "1rem auto 0", paddingBottom: "6vh" }}>
+            <div className={styles.controls}>
+              <PictureSettings
+                algo={algo}
+                setAlgo={setAlgo}
+                level={level}
+                setLevel={setLevel}
+                invert={invert}
+                setInvert={setInvert}
+                blueSize={blueSize}
+                setBlueSize={setBlueSize}
+                rlength={rlength}
+                setRLength={setRLength}
+                rdecay={rdecay}
+                setRDecay={setRDecay}
+                resolutionMax={resolutionMax}
+                setResolutionMax={setResolutionMax}
+                primaryColor={primaryColor}
+                setPrimaryColor={setPrimaryColor}
+                secondaryColor={secondaryColor}
+                setSecondaryColor={setSecondaryColor}
+              />
+            </div>
+            <div className={styles.controls} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, margin: "1rem auto 0", paddingBottom: "6vh" }}>
               <button type="button" onClick={onDownload} style={{ width: "100%", padding: "0.5rem", fontSize: 14 }}>Download as PNG</button>
               <button type="button" disabled style={{ width: "100%", padding: "0.5rem", fontSize: 14, opacity: 0.5, pointerEvents: "none" }}>Mint (TBA)</button>
             </div>
